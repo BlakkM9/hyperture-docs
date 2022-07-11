@@ -1,0 +1,527 @@
+This was my text document, used to write down all the stuff while desiging and building
+HYPERTURE. Until I find the time to write proper docs, this might be used to get a basic understanding on how
+to use it (especially everything until line 180). 
+
+128th bit: Immidate mode for input A
+64th  bit: Immidate mode for input B
+
+OPCODE:
+ 128 |  64 | 32-63 | 8-31 | 0-7
+  0  |  0  | 0     | 00   | 000
+ IMA | IMB | ALU   | CU   | MEM
+
+REGISTERS:
+0   reg0    - general purpose
+1   reg1    - general purpose
+2   reg2    - general purpose
+3   reg3    - general purpose
+4   reg4    - general purpose
+5   reg5    - general purpose
+6   reg6    - general purpose
+7   reg7    - general purpose
+8   reg8    - general purpose
+9   sctr    - stack counter
+10  ctr     - instruction counter
+11  io      - input/output
+
+MEMORY: 0 - 7
+moves values within the register
+0   mov     - mov FROM_REGISTER TO_REGISTER
+128 movA    - mov VALUE TO_REGISTER
+
+moves values from ram to register
+1   load    - load REGISTER_WITH_RAM_ADDRESS TO_REGISTER
+129 loadA   - loadA FROM_RAM_ADDRESS TO_REGISTER
+
+moves values from register to ram
+2   save    - save FROM_REGISTER REGISTER_WITH_RAM_ADDRESS
+130 saveA   - saveA VALUE REGISTER_WITH_RAM_ADDRESS
+66  saveB   - saveB FROM_REGISTER TO_RAM_ADDRESS
+194 saveAB  - saveAB VALUE TO_RAM_ADDRESS
+
+stack
+4   push    - push FROM_REGISTER
+132 pushA   - push VALUE
+5   pop     - pop TO_REGISTER
+
+
+CU: 8 - 31
+8   jmp     - jmp JUMP_ADDRESS
+9   call    - call FUNCTION_POINTER
+10  ret     - ret
+
+USAGE: OPCODE ARGUMENT_A ARGUMENT_B JUMP_ADDRESS
+==
+16  eq
+144 eqA
+80  eqB
+208 eqAB
+
+!=
+17  neq
+145 neqA
+81  neqB
+209 neqAB
+
+<
+18  lt
+146 ltA
+82  ltB
+210 ltAB
+
+<
+19  ltu     - unsigned
+147 ltuA
+83  ltuB
+211 ltuAB
+
+<=
+20  leq
+148 leqA
+84  leqB
+212 leqAB
+
+<=
+21  lequ    - unsigned
+149 leqA
+84  leqB
+213 leqAB
+
+>
+22  gt
+150 gtA
+86  gtB
+214 gtAB
+
+>
+23  gtu     - unsigned
+151 gtuA
+87  gtuB
+215 gtuAB
+
+>=
+24  geq
+152 geqA
+88  geqB
+216 geqAB
+
+>=
+25  gequ    - unsigned
+153 gequA
+89  gequB
+217 gequAB
+
+ALU: 32 - 63
+LOGIC:
+32  not     - not ARGUMENT_A RESULT_REGISTER
+160 notA
+
+USAGE: OPCODE ARGUMENT_A ARGUMENT_B RESULT_REGISTER
+33  and
+161 andA
+97  andB
+225 andAB
+
+34  or
+162 orA
+98  orB
+226 orAB
+
+35  xor
+163 xorA
+99  xorB
+227 xorAB
+
+36  shl
+164 shlA
+100 shlB
+228 shlAB
+
+37  shr
+165 shrA
+101 shrB
+229 shrAB
+
+38  rol
+166 rolA
+102 rolB
+230 rolAB
+
+39  ror
+167 rorA
+103 rorB
+231 rorAB
+
+40  ashr
+168 ashrA
+104 ashrB
+232 ashrAB
+
+MATH:
+41  add
+169 addA
+105 addB
+233 addAB
+
+42  sub
+170 subA
+106 subB
+234 subAB
+
+43  mul
+171 mulA
+107 mulB
+235 mulAB
+
+44  div
+172 divA
+108 divB
+236 divAB
+
+45  mod
+173 modA
+109 modB
+237 modAB
+
+I/0 MAPPING:
+INPUTS:
+ARG1
+ARG2
+ARG3
+IN REG A
+IN REG B
+IN RAM
+IN STACK
+ALU RESULT IN
+OUTPUTS:
+LOAD ADDR A
+LOAD ADDR B
+RAM ADDR
+SAVE ADDR
+SAVE VALUE
+OUT A
+OUT B
+
+MEM:
+0   mov     - mov FROM_REGISTER TO_REGISTER
+mov
+LOAD ADDR A:  ARG1
+LOAD ADDR B:  ---
+RAM ADDR:     ---
+SAVE ADDR:    ARG2
+SAVE VALUE:   IN REG A
+OUT A:        ---
+OUT B:        ---
+
+
+128 movA    - mov VALUE TO_REGISTER
+mov, IM A
+LOAD ADDR A:  ---
+LOAD ADDR B:  ---
+RAM ADDR:     ---
+SAVE ADDR:    ARG2
+SAVE VALUE:   ARG1
+OUT A:        ---
+OUT B:        ---
+
+1   load    - load REGISTER_WITH_RAM_ADDRESS TO_REGISTER
+load
+LOAD ADDR A:  ARG1
+LOAD ADDR B:  ---
+RAM ADDR:     IN REG A
+SAVE ADDR:    ARG2
+SAVE VALUE:   IN RAM
+OUT A:        ---
+OUT B:        ---
+
+129 loadA   - loadA FROM_RAM_ADDRESS TO_REGISTER
+load, IM A
+LOAD ADDR A:  ---
+LOAD ADDR B:  ---
+RAM ADDR:     ARG1
+SAVE ADDR:    ARG2
+SAVE VALUE:   IN RAM
+OUT A:        ---
+OUT B:        ---
+
+2   save    - save FROM_REGISTER REGISTER_WITH_RAM_ADDRESS
+save
+LOAD ADDR A:  ARG1
+LOAD ADDR B:  ARG2
+RAM ADDR:     IN REG B
+SAVE ADDR:    ---
+SAVE VALUE:   IN REG A
+OUT A:        ---
+OUT B:        ---
+
+130 saveA   - saveA VALUE REGISTER_WITH_RAM_ADDRESS
+save, IM A
+LOAD ADDR A:  ---
+LOAD ADDR B:  ARG2
+RAM ADDR:     IN REG B
+SAVE ADDR:    ---
+SAVE VALUE:   ARG1
+OUT A:        ---
+OUT B:        ---
+
+66  saveB   - saveB FROM_REGISTER TO_RAM_ADDRESS
+save, IM B
+LOAD ADDR A:  ARG1
+LOAD ADDR B:  ---
+RAM ADDR:     ARG2
+SAVE ADDR:    ---
+SAVE VALUE:   IN REG A
+OUT A:        ---
+OUT B:        ---
+
+194 saveAB  - saveAB VALUE TO_RAM_ADDRESS
+save, IM A, IM B
+LOAD ADDR A:  ---
+LOAD ADDR B:  ---
+RAM ADDR:     ARG2
+SAVE ADDR:    ---
+SAVE VALUE:   ARG1
+OUT A:        ---
+OUT B:        ---
+
+4   push    - push FROM_REGISTER
+push
+LOAD ADDR A:  ARG1
+LOAD ADDR B:  ---
+RAM ADDR:     ---
+SAVE ADDR:    ---
+SAVE VALUE:   IN REG A
+OUT A:        ---
+OUT B:        ---
+
+132 pushA   - push VALUE
+push, IM A
+LOAD ADDR A:  ---
+LOAD ADDR B:  ---
+RAM ADDR:     ---
+SAVE ADDR:    ---
+SAVE VALUE:   ARG1
+OUT A:        ---
+OUT B:        ---
+
+CU:
+5   pop     - pop TO_REGISTER
+pop
+LOAD ADDR A:  ---
+LOAD ADDR B:  ---
+RAM ADDR:     ---
+SAVE ADDR:    ARG1
+SAVE VALUE:   IN STACK
+OUT A:        ---
+OUT B:        ---
+
+8   jmp     - jmp JUMP_ADDRESS
+jmp
+LOAD ADDR A:  ---
+LOAD ADDR B:  ---
+RAM ADDR:     ---
+SAVE ADDR:    10 (ctr)
+SAVE VALUE:   ARG1
+OUT A:        ---
+OUT B:        ---
+
+9   call    - call FUNCTION_POINTER
+call (push, jmp)
+LOAD ADDR A:  10 (ctr)
+LOAD ADDR B:  ---
+RAM ADDR:     ---
+SAVE ADDR:    10 (ctr)
+SAVE VALUE:   ARG1
+OUT A:        ---
+OUT B:        ---
+
+10  ret     - ret
+ret (pop, jmp)
+LOAD ADDR A:  ---
+LOAD ADDR B:  ---
+RAM ADDR:     ---
+SAVE ADDR:    10 (ctr)
+SAVE VALUE:   IN STACK
+OUT A:        ---
+OUT B:        ---
+
+CU REST: 16 - 25 (IM A and IM B available)
+OPCODE REG_WITH_ARGUMENT_A REG_WITH_ARGUMENT_B JUMP_ADDRESS_IF_TRUE
+CU REST
+LOAD ADDR A:  ARG1
+LOAD ADDR B:  ARG2
+RAM ADDR:     ---
+SAVE ADDR:    10 (ctr)
+SAVE VALUE:   ARG3
+OUT A:        IN REG A
+OUT B:        IN REG B
+
+OPCODE VALUE_A REG_WITH_ARGUMENT_B JUMP_ADDRESS_IF_TRUE
+CU REST, IM A
+LOAD ADDR A:  ---
+LOAD ADDR B:  ARG2
+RAM ADDR:     ---
+SAVE ADDR:    10 (ctr)
+SAVE VALUE:   ARG3
+OUT A:        ARG1
+OUT B:        IN REG B
+
+OPCODE REG_WITH_ARGUMENT_A VALUE_B JUMP_ADDRESS_IF_TRUE
+CU REST, IM B
+LOAD ADDR A:  ARG1
+LOAD ADDR B:  ---
+RAM ADDR:     ---
+SAVE ADDR:    10 (ctr)
+SAVE VALUE:   ARG3
+OUT A:        IN REG A
+OUT B:        ARG2
+
+OPCODE VALUE_A VALUE_B JUMP_ADDRESS_IF_TRUE
+CU REST, IM A, IM B
+LOAD ADDR A:  ---
+LOAD ADDR B:  ---
+RAM ADDR:     ---
+SAVE ADDR:    10 (ctr)
+SAVE VALUE:   ARG3
+OUT A:        ARG1
+OUT B:        ARG2
+
+ALU:
+32  not     - not REG_WITH_ARGUMENT_A RESULT_REGISTER
+not
+LOAD ADDR A:  ARG1
+LOAD ADDR B:  ---
+RAM ADDR:     ---
+SAVE ADDR:    ARG2
+SAVE VALUE:   IN ALU
+OUT A:        IN REG A
+OUT B:        ---
+
+32  notA     - not VALUE_A RESULT_REGISTER
+not, IM A
+LOAD ADDR A:  ---
+LOAD ADDR B:  ---
+RAM ADDR:     ---
+SAVE ADDR:    ARG2
+SAVE VALUE:   IN ALU
+OUT A:        ARG1
+OUT B:        ---
+
+ALU REST: 33 - 45 (IM A and IM B available)
+OPCODE REG_WITH_ARGUMENT_A REG_WITH_ARGUMENT_B RESULT_REGISTER
+ALU REST
+LOAD ADDR A:  ARG1
+LOAD ADDR B:  ARG2
+RAM ADDR:     ---
+SAVE ADDR:    ARG3
+SAVE VALUE:   IN ALU
+OUT A:        IN REG A
+OUT B:        IN REG B
+
+OPCODE VALUE_A REG_WITH_ARGUMENT_B RESULT_REGISTER
+ALU REST, IM A
+LOAD ADDR A:  ---
+LOAD ADDR B:  ARG2
+RAM ADDR:     ---
+SAVE ADDR:    ARG3
+SAVE VALUE:   IN ALU
+OUT A:        ARG1
+OUT B:        IN REG B
+
+OPCODE REG_WITH_ARGUMENT_A VALUE_B RESULT_REGISTER
+ALU REST, IM B
+LOAD ADDR A:  ARG1
+LOAD ADDR B:  ---
+RAM ADDR:     ---
+SAVE ADDR:    ARG3
+SAVE VALUE:   IN ALU
+OUT A:        IN REG A
+OUT B:        ARG2
+
+OPCODE VALUE_A VALUE_B RESULT_REGISTER
+ALU REST, IM A, IM B
+LOAD ADDR A:  ---
+LOAD ADDR B:  ---
+RAM ADDR:     ---
+SAVE ADDR:    ARG3
+SAVE VALUE:   IN ALU
+OUT A:        ARG1
+OUT B:        ARG2
+
+
+LOAD ADDR A:
+IN:       ARG1, 10(ctr)
+CONTROLS: call
+ARG1      - !call
+10(ctr)   - call
+
+
+
+LOAD ADDR B:
+IN:       ARG2
+
+RAM ADDR:
+IN:       ARG1, ARG2, IN REG A, IN REG B
+CONTROLS: IM A, IM B, load, save
+ARG1      - load && IM A
+ARG2      - save && IM B
+IN REG A  - load && !IM A
+IN REG B  - save && !IM B
+
+SAVE ADDR:
+IN:       ARG1, ARG2, ARG3, 10 (ctr)  
+CONTROLS: mov, pop, load, jmp, call, ret, CU REST, not, ALU REST
+ARG1      - pop
+ARG2      - mov || load || not
+ARG3      - ALU REST
+10 (ctr)  - jmp || call || ret || CU REST
+
+SAVE VALUE:
+IN:       ARG1, ARG3, IN REG A, IN RAM, IN STACK, IN ALU
+OUT:      SAVE VALUE, SAVE VALUE STACK
+CONTROLS: IM A, mov, load, save, push, pop, jmp, call, ret, CU REST, not, ALU REST
+ARG1      - ((mov || save || push) && IM A) || jmp || call
+ARG3      - CU REST
+IN REG A  - (mov || save || push) && !IM A
+IN RAM    - load
+IN STACK  - pop || ret
+IN ALU    - not || ALU REST
+IF call   
+SAVE VALUE        <= IN REG A + 2 (current instruction pointer)
+STACK SAVE VALUE  <= ARG1 (function pointer)
+
+OUT A:
+IN:       ARG1, IN REG A
+CONTROLS: IM A
+ARG1      - IM A
+IN REG A  - !IM A
+
+OUT B:
+IN:       ARG2, IN REG B
+CONTROLS: IM B
+ARG2      - IM B
+IN REG B  - !IM B
+
+
+TEST COVERAGE:
+mov
+movA
+saveA
+save
+load
+loadA
+push
+pushA
+pop
+neq
+neqA
+neqB
+neqAB
+jmp
+call
+ret
+add
+addA
+addB
+addAB
+not
